@@ -1,0 +1,64 @@
+POST http://localhost:8081/api/rabbitmq/new-announcement
+Content-Type: application/json
+
+{
+  "id": 1,
+  "countryGrpc": "Страна",
+  "cityGrpc": "Город",
+  "renovationGrpc": "Ремонт",
+  "numberOfRooms": 2,
+  "area": 100,
+  "floor": 3,
+  "price": 500000,
+  "message": "Новое объявление!"
+}
+
+###
+
+POST http://localhost:8081/api/rabbitmq/subscriber-notification
+Content-Type: application/json
+
+{
+  "id": 12,
+  "countryGrpc": "Страна",
+  "cityGrpc": "Город12",
+  "renovationGrpc": "Ремонт",
+  "numberOfRooms": 2,
+  "area": 100,
+  "floor": 3,
+  "price": 500000,
+  "message": "Новое уведомление!"
+}
+
+###
+
+
+POST http://localhost:8081/api/rabbitmq/price-update
+Content-Type: application/json
+
+{
+  "id": 1,
+  "id_country_grpc": 3,
+  "id_city_grpc": 2,
+  "id_renovation_grpc": 1,
+  "number_of_rooms": 2,
+  "area": 100,
+  "floor": 3,
+  "price": 500000,
+  "message": "Обновление цены: Квартира подешевела до 500000"
+}
+
+
+###
+
+POST http://localhost:8081/api/rabbitmq/subscriber-registration
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john.doe@example.com"
+}
+
+###
+
