@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Service Notifications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="socket.io.js"></script>
+    <style>
+        #toastContainer {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1050;
+        }
+    </style>
+    <script>
+        let socket;
+
+        function connect() {
+            const email = document.getElementById("email").value;
+
+            if (!email) {
+                alert("Please enter your email before connecting.");
+                return;
+            }
+
+            socket = io('ws://localhost:9092', {
+                query: { email: email },
+                transports: ['websocket']
+            });
+
+            socket.on('connect', () => {
+                console.log("Connected to WebSocket server");
+                showToast("Connected to WebSocket server as: " + email, "success");
+            });
+
+            socket.on('userNotification', (data) => {
+                if (data && data.message && data.links) {
+                    console.log("Notification received:", data.message);
+                    console.log("Link received:", data.links);
+                    showToast(
+                        "Новое объявление в " + data.message,
+                        "info",
+                        () => {
+                            window.open(data.links, "_blank");
+                        }
+                    );
+                } else {
+                    console.error("Invalid data received:", data);
+                    showToast("Invalid data received", "danger");
+                }
+            });
+
+
+
+            socket.on('connect_error', (error) => {
+                console.error("Connection error:", error);
+                showToast("Connection error: " + error.message, "danger");
+            });
+
+            socket.on('disconnect', () => {
+                console.log("Disconnected from WebSocket server");
+                showToast("Disconnected from WebSocket server", "warning");
+            });
+        }
+
+        function showToast(message, type, onClick = null) {
+            const toastContainer = document.getElementById("toastContainer");
+
+            const toast = document.createElement("div");
+            toast.className = `toast align-items-center text-bg-${type} border-0 mb-2`;
+            toast.setAttribute("role", "alert");
+            toast.setAttribute("aria-live", "assertive");
+            toast.setAttribute("aria-atomic", "true");
+
+            toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <p>${message}</p>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+            if (onClick) {
+                toast.style.cursor = "pointer";
+                toast.addEventListener("click", (event) => {
+                    // Игнорируем клик на кнопке закрытия
+                    if (!event.target.classList.contains("btn-close")) {
+                        onClick();
+                    }
+                });
+            }
+
+            toastContainer.appendChild(toast);
+
+            const bootstrapToast = new bootstrap.Toast(toast);
+            bootstrapToast.show();
+
+            // Удаляем тост через 5 секунд
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+    </script>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>Main Service Notifications</h1>
+    <div class="mb-3">
+        <input type="text" id="email" class="form-control" placeholder="Enter your email">
+    </div>
+    <button class="btn btn-primary" onclick="connect()">Connect</button>
+</div>
+
+<div id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
